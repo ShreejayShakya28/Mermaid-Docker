@@ -1,0 +1,10 @@
+{
+  "name": "mermaid-renderer",
+  "version": "1.0.0",
+  "config": {
+    "puppeteer_skip_download": "true"
+  },
+  "dependencies": {
+    "@mermaid-js/mermaid-cli": "^11.12.0"
+  }
+}
