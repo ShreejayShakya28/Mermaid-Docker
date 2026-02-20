@@ -8,15 +8,20 @@ Convert `.mmd` diagram files to PNG, PDF, or SVG using Docker. No need to instal
 
 ## Setup (One Time Only)
 
-**1. Clone or download this folder**
-
-**2. Open the folder in terminal**
+**1. Clone the repo**
 ```bash
-cd mermaid-docker
+git clone <repo-url> ~/Documents/mermaid/mermaid-docker
+```
+
+**2. Create input and output folders**
+```bash
+mkdir -p ~/Documents/mermaid/input
+mkdir -p ~/Documents/mermaid/output
 ```
 
 **3. Build the Docker image**
 ```bash
+cd ~/Documents/mermaid/mermaid-docker
 docker build -t mermaid .
 ```
 This will take a few minutes the first time — it downloads and sets up everything inside the container.
@@ -28,14 +33,21 @@ chmod +x mermaid
 
 ---
 
-## Usage
+## Folder Structure
 
-Put your `.mmd` files in:
 ```
 ~/Documents/mermaid/
+├── mermaid-docker/    ← the repo (code lives here)
+├── input/             ← put your .mmd files here
+└── output/            ← converted files appear here
 ```
 
-Then from inside the `mermaid-docker` folder run:
+---
+
+## Usage
+
+Put your `.mmd` files in `~/Documents/mermaid/input/` then from inside `~/Documents/mermaid/mermaid-docker` run:
+
 ```bash
 # Export as PNG (high quality, scale 5)
 ./mermaid diagram.mmd png
@@ -43,9 +55,11 @@ Then from inside the `mermaid-docker` folder run:
 # Export as PDF
 ./mermaid diagram.mmd pdf
 
+# Export as SVG (vector, infinite resolution)
+./mermaid diagram.mmd svg
 ```
 
-Output file appears in `~/Documents/mermaid/` with the same name, just a different extension.
+Output appears in `~/Documents/mermaid/output/` with the same name, just a different extension.
 
 ---
 
@@ -55,12 +69,13 @@ Output file appears in `~/Documents/mermaid/` with the same name, just a differe
 |--------|----------|
 | `png` | Presentations, docs, sharing — high quality at scale 5 |
 | `pdf` | Printing — vector based, crisp at any size |
+| `svg` | Web, design tools — infinite resolution, fully scalable |
 
 ---
 
 ## Example
 
-Create a file `~/Documents/mermaid/flow.mmd`:
+Create a file `~/Documents/mermaid/input/flow.mmd`:
 ```
 graph TD
     A[Start] --> B{Decision}
@@ -70,10 +85,11 @@ graph TD
 
 Then run:
 ```bash
+cd ~/Documents/mermaid/mermaid-docker
 ./mermaid flow.mmd png
 ```
 
-You will get `~/Documents/mermaid/flow.png` — black and white, high quality.
+You will get `~/Documents/mermaid/output/flow.png` — black and white, high quality.
 
 ---
 
@@ -82,4 +98,4 @@ You will get `~/Documents/mermaid/flow.png` — black and white, high quality.
 - Output is always **black and white** (print friendly)
 - PNG scale is always **5** (high quality)
 - Docker must be running before using the `mermaid` command
-- The `~/Documents/mermaid/` folder is created automatically if it doesn't exist
+- `input/` and `output/` folders are created automatically if they don't exist

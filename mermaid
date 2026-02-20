@@ -1,13 +1,14 @@
 #!/bin/bash
 
 if [ -z "$1" ] || [ -z "$2" ]; then
-  echo "Usage: mermaid <filename.mmd> <png|pdf|svg>"
-  echo "Example: mermaid diagram.mmd png"
+  echo "Usage: ./mermaid <filename.mmd> <png|pdf|svg>"
+  echo "Example: ./mermaid diagram.mmd png"
   exit 1
 fi
 
-# Create mermaid folder if it doesn't exist
-mkdir -p ~/Documents/mermaid
+# Create folders if they dont exist
+mkdir -p ~/Documents/mermaid/input
+mkdir -p ~/Documents/mermaid/output
 
 docker run --rm \
   -v ~/Documents/mermaid:/data \
