@@ -11,6 +11,6 @@ mkdir -p ~/Documents/mermaid/input
 mkdir -p ~/Documents/mermaid/output
 
 docker run --rm \
-  -v ~/Documents/mermaid:/data \
+  -v ~/Documents/mermaid:/data:Z \
   mermaid \
   "$1" "$2"
