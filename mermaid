@@ -1,16 +1,119 @@
 #!/bin/bash
+set -euo pipefail
 
-if [ -z "$1" ] || [ -z "$2" ]; then
-  echo "Usage: ./mermaid <filename.mmd> <png|pdf|svg>"
-  echo "Example: ./mermaid diagram.mmd png"
+IMAGE_NAME="mermaid"
+
+show_usage() {
+  echo "Usage:"
+  echo "  mermaid <filename.mmd> <png|pdf|svg|output.png|output.pdf|output.svg>"
+  echo "  mermaid docker-status"
+  echo "  mermaid docker-images"
+  echo "  mermaid docker-containers"
+  echo "  mermaid docker-stop"
+  echo
+  echo "Examples:"
+  echo "  mermaid code.mmd png"
+  echo "  mermaid code.mmd output.svg"
+  echo "  mermaid docker-status"
+}
+
+resolve_script_dir() {
+  local source="${BASH_SOURCE[0]}"
+  while [ -h "$source" ]; do
+    local dir
+    dir="$(cd -P "$(dirname "$source")" && pwd)"
+    source="$(readlink "$source")"
+    [[ "$source" != /* ]] && source="$dir/$source"
+  done
+  cd -P "$(dirname "$source")" && pwd
+}
+
+SCRIPT_DIR="$(resolve_script_dir)"
+
+if [ "$#" -eq 0 ]; then
+  show_usage
   exit 1
 fi
 
-# Create folders if they dont exist
-mkdir -p ~/Documents/mermaid/input
-mkdir -p ~/Documents/mermaid/output
+if ! command -v docker >/dev/null 2>&1; then
+  echo "[mermaid] Docker command not found. Install Docker first."
+  exit 1
+fi
+
+case "${1:-}" in
+  docker-status)
+    if docker info >/dev/null 2>&1; then
+      echo "[mermaid] Docker status: running"
+    else
+      echo "[mermaid] Docker status: not running"
+    fi
+    exit 0
+    ;;
+  docker-images)
+    echo "[mermaid] Docker images matching '$IMAGE_NAME':"
+    docker images "$IMAGE_NAME"
+    exit 0
+    ;;
+  docker-containers)
+    echo "[mermaid] Running containers from image '$IMAGE_NAME':"
+    docker ps --filter "ancestor=$IMAGE_NAME"
+    echo
+    echo "[mermaid] Recent containers from image '$IMAGE_NAME':"
+    docker ps -a --filter "ancestor=$IMAGE_NAME" --format "table {{.ID}}\t{{.Status}}\t{{.Names}}" | head -n 6
+    exit 0
+    ;;
+  docker-stop)
+    if command -v systemctl >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then
+      echo "[mermaid] Stopping Docker service..."
+      sudo systemctl stop docker
+      echo "[mermaid] Docker stopped."
+    else
+      echo "[mermaid] Could not stop Docker automatically on this system."
+      echo "[mermaid] Stop it manually using your platform's Docker method."
+      exit 1
+    fi
+    exit 0
+    ;;
+esac
+
+if [ "$#" -lt 2 ]; then
+  show_usage
+  exit 1
+fi
+
+if docker info >/dev/null 2>&1; then
+  echo "[mermaid] Docker is running."
+else
+  echo "[mermaid] Docker is not running."
+  if command -v systemctl >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then
+    echo "[mermaid] Starting Docker service..."
+    sudo systemctl start docker
+    if docker info >/dev/null 2>&1; then
+      echo "[mermaid] Docker started."
+    else
+      echo "[mermaid] Failed to start Docker."
+      exit 1
+    fi
+  else
+    echo "[mermaid] Please start Docker and retry."
+    exit 1
+  fi
+fi
+
+if docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+  echo "[mermaid] Docker image '$IMAGE_NAME' found."
+else
+  echo "[mermaid] Docker image '$IMAGE_NAME' not found."
+  echo "[mermaid] Build once with: cd $SCRIPT_DIR && ./install.sh"
+  exit 1
+fi
+
+echo "[mermaid] Rendering diagram..."
 
 docker run --rm \
-  -v ~/Documents/mermaid:/data:Z \
-  mermaid \
+  --security-opt label=disable \
+  -v "$PWD":/work \
+  "$IMAGE_NAME" \
   "$1" "$2"
+
+echo "[mermaid] Render complete."

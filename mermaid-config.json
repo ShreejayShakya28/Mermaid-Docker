@@ -1,6 +1,7 @@
 {
   "theme": "base",
   "themeVariables": {
+    "fontFamily": "Times New Roman, Times, serif",
     "primaryColor": "#ffffff",
     "primaryTextColor": "#000000",
     "primaryBorderColor": "#000000",
